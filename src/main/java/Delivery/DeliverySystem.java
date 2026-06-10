@@ -44,9 +44,11 @@ public class DeliverySystem {
     }
 
     
+  /* just to test out
     public static void main(String[] args) {
+    
         DeliverySystem ds = new DeliverySystem();
 
         System.out.println(ds.assignRider().getName());
-    }
+    }*/ 
 }
