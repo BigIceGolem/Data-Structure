@@ -7,6 +7,7 @@ public class DeliveryApp {
     // 1. Initialize your completed DataManager
     private static DataManager db = new DataManager();
     private static Scanner scanner = new Scanner(System.in);
+    private static DeliverySystem ds = new DeliverySystem();
 
     public static void main(String[] args) {
         System.out.println("==================================================");
@@ -118,8 +119,16 @@ public class DeliveryApp {
         String orderId = scanner.nextLine();
         
         System.out.println("[System]: Finding optimal rider for order " + orderId + "...");
-        // TODO (Aasim): Call your Min Heap extraction method here.
-        // Example: Rider bestRider = riderHeap.extractMin();
+        
+        if ( ds.riderheap.isEmpty()){
+            System.out.println("Sorry we are out of riders!");
+            
+        }else {
+        Rider bestRider = ds.assignRider();
+        
+        System.out.println(bestRider.getName()+ " has been assigned for order "+ orderId);
+        }
+        
     }
 
     // 5. Hazim's Module Placeholder
