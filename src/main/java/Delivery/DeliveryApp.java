@@ -59,6 +59,15 @@ public class DeliveryApp {
         }
         scanner.close();
     }
+    // Populate the graph nodes with mock delivery paths matching Amirun's locations
+    private static void initializeRouteNetwork() {
+        routeGraph.addEdge("Mid Valley", "Bangsar", 5);
+        routeGraph.addEdge("Mid Valley", "KLCC", 15);
+        routeGraph.addEdge("Bangsar", "Bukit Bintang", 10);
+        routeGraph.addEdge("Bukit Bintang", "KLCC", 4);
+        routeGraph.addEdge("1 Utama", "Bangsar", 12);
+        routeGraph.addEdge("1 Utama", "Mid Valley", 18);
+    }
 
     // --- SUB-MENUS & INTEGRATION STUBS ---
 
@@ -122,16 +131,17 @@ public class DeliveryApp {
         // Example: Rider bestRider = riderHeap.extractMin();
     }
 
-    // 5. Hazim's Module Placeholder
+    // 5. Hazim's Module (Fully Integrated)
     private static void menuCalculateRoute() {
         System.out.println("\n-- Route Optimization --");
-        System.out.print("Enter Restaurant Location Node: ");
+        System.out.print("Enter Restaurant Location Node (e.g., Mid Valley): ");
         String startNode = scanner.nextLine();
-        System.out.print("Enter Customer Location Node: ");
+        System.out.print("Enter Customer Location Node (e.g., KLCC): ");
         String endNode = scanner.nextLine();
         
-        System.out.println("[System]: Calculating shortest path from " + startNode + " to " + endNode + "...");
-        // TODO (Hazim): Call your Dijkstra algorithm method here.
-        // Example: graph.findShortestPath(startNode, endNode);
+        System.out.println("[System]: Calculating shortest path from '" + startNode + "' to '" + endNode + "'...");
+        
+        // Execute Hazim's Dijkstra implementation
+        routeGraph.findShortestPath(startNode, endNode);
     }
 }
