@@ -3,13 +3,32 @@ package AppSystem;
 import java.io.*;
 import java.util.*;
 
-/**
- * Handles saving and loading all app data to/from CSV files.
- * Files are stored in the project root folder.
+/*
+ * FileManager.java
+ * ----------------
+ * Handles all reading and writing of data to CSV files.
+ * No other class touches the files directly — everything goes through here.
+ *
+ * CSV (Comma-Separated Values) format:
+ *   Each line = one record. Fields inside a line are separated by commas.
+ *   Example line in customers.csv:
+ *     1,Alice,Jalan Bunga 1
+ *
+ * One file per data type:
+ *   customers.csv    — customer ID, name, address
+ *   restaurants.csv  — restaurant ID, name, cuisine
+ *   foodmenu.csv     — food name, price
+ *   orders.csv       — order ID, customer ID, status, items (pipe-separated)
+ *   riders.csv       — rider ID, name, distance
+ *
+ * Special characters:
+ *   If a field value contains a comma (e.g. "Kuala Lumpur, Malaysia") it
+ *   would break the CSV format. We escape commas as {{COMMA}} before saving
+ *   and unescape them when loading.
  */
 public class FileManager {
 
-    // -- file paths --
+    // file names — stored in the project root folder
     private static final String CUSTOMERS_FILE   = "customers.csv";
     private static final String RESTAURANTS_FILE = "restaurants.csv";
     private static final String FOOD_FILE        = "foodmenu.csv";
@@ -17,9 +36,9 @@ public class FileManager {
     private static final String RIDERS_FILE      = "riders.csv";
 
     // ================================================================
-    //  CUSTOMERS
-    //  Format: id,name,address
+    //  CUSTOMERS — format: id,name,address
     // ================================================================
+
     public static void saveCustomers(List<Customer> list) {
         try (PrintWriter pw = new PrintWriter(new FileWriter(CUSTOMERS_FILE))) {
             for (Customer c : list)
@@ -32,15 +51,18 @@ public class FileManager {
     public static List<Customer> loadCustomers() {
         List<Customer> list = new ArrayList<>();
         File f = new File(CUSTOMERS_FILE);
-        if (!f.exists()) return list;
+        if (!f.exists()) return list; // no file yet — return empty list
         try (BufferedReader br = new BufferedReader(new FileReader(f))) {
             String line;
             while ((line = br.readLine()) != null) {
                 line = line.trim();
                 if (line.isEmpty()) continue;
-                String[] parts = line.split(",", 3);
+                String[] parts = line.split(",", 3); // max 3 parts: id, name, address
                 if (parts.length == 3)
-                    list.add(new Customer(Integer.parseInt(parts[0]), unescape(parts[1]), unescape(parts[2])));
+                    list.add(new Customer(
+                            Integer.parseInt(parts[0]),
+                            unescape(parts[1]),
+                            unescape(parts[2])));
             }
         } catch (IOException e) {
             System.out.println("[File] Error loading customers: " + e.getMessage());
@@ -49,9 +71,9 @@ public class FileManager {
     }
 
     // ================================================================
-    //  RESTAURANTS
-    //  Format: id,name,cuisine
+    //  RESTAURANTS — format: id,name,cuisine
     // ================================================================
+
     public static void saveRestaurants(List<Restaurant> list) {
         try (PrintWriter pw = new PrintWriter(new FileWriter(RESTAURANTS_FILE))) {
             for (Restaurant r : list)
@@ -72,7 +94,10 @@ public class FileManager {
                 if (line.isEmpty()) continue;
                 String[] parts = line.split(",", 3);
                 if (parts.length == 3)
-                    list.add(new Restaurant(Integer.parseInt(parts[0]), unescape(parts[1]), unescape(parts[2])));
+                    list.add(new Restaurant(
+                            Integer.parseInt(parts[0]),
+                            unescape(parts[1]),
+                            unescape(parts[2])));
             }
         } catch (IOException e) {
             System.out.println("[File] Error loading restaurants: " + e.getMessage());
@@ -81,9 +106,9 @@ public class FileManager {
     }
 
     // ================================================================
-    //  FOOD MENU (BST items)
-    //  Format: name,price
+    //  FOOD MENU — format: name,price
     // ================================================================
+
     public static void saveFoodMenu(List<FoodItem> list) {
         try (PrintWriter pw = new PrintWriter(new FileWriter(FOOD_FILE))) {
             for (FoodItem item : list)
@@ -102,9 +127,11 @@ public class FileManager {
             while ((line = br.readLine()) != null) {
                 line = line.trim();
                 if (line.isEmpty()) continue;
-                String[] parts = line.split(",", 2);
+                String[] parts = line.split(",", 2); // name, price
                 if (parts.length == 2)
-                    list.add(new FoodItem(unescape(parts[0]), Double.parseDouble(parts[1])));
+                    list.add(new FoodItem(
+                            unescape(parts[0]),
+                            Double.parseDouble(parts[1])));
             }
         } catch (IOException e) {
             System.out.println("[File] Error loading food menu: " + e.getMessage());
@@ -113,15 +140,17 @@ public class FileManager {
     }
 
     // ================================================================
-    //  ORDERS
-    //  Format: orderId,customerId,status,item1|item2|item3
+    //  ORDERS — format: orderId,customerId,status,item1|item2|item3
+    //  Items are joined with "|" so multiple items fit in one CSV field.
     // ================================================================
+
     public static void saveOrders(List<OrderRecord> list) {
         try (PrintWriter pw = new PrintWriter(new FileWriter(ORDERS_FILE))) {
             for (OrderRecord o : list) {
-                // join items with pipe separator
+                // join all item names with a pipe character as separator
                 String items = String.join("|", o.items);
-                pw.println(o.orderId + "," + o.customerId + "," + escape(o.status) + "," + escape(items));
+                pw.println(o.orderId + "," + o.customerId + ","
+                        + escape(o.status) + "," + escape(items));
             }
         } catch (IOException e) {
             System.out.println("[File] Error saving orders: " + e.getMessage());
@@ -137,17 +166,18 @@ public class FileManager {
             while ((line = br.readLine()) != null) {
                 line = line.trim();
                 if (line.isEmpty()) continue;
-                String[] parts = line.split(",", 4);
+                String[] parts = line.split(",", 4); // 4 fields max
                 if (parts.length == 4) {
-                    int orderId    = Integer.parseInt(parts[0]);
-                    int customerId = Integer.parseInt(parts[1]);
-                    String status  = unescape(parts[2]);
-                    String itemStr = unescape(parts[3]);
+                    int          orderId    = Integer.parseInt(parts[0]);
+                    int          customerId = Integer.parseInt(parts[1]);
+                    String       status     = unescape(parts[2]);
+                    String       itemStr    = unescape(parts[3]);
+                    // split items back out from the pipe-separated string
                     List<String> items = itemStr.isEmpty()
                             ? new ArrayList<>()
                             : new ArrayList<>(Arrays.asList(itemStr.split("\\|")));
                     OrderRecord rec = new OrderRecord(orderId, customerId, items);
-                    rec.status = status;
+                    rec.status = status; // restore the saved status
                     list.add(rec);
                 }
             }
@@ -158,9 +188,9 @@ public class FileManager {
     }
 
     // ================================================================
-    //  RIDERS
-    //  Format: id,name,distanceKm
+    //  RIDERS — format: id,name,distanceKm
     // ================================================================
+
     public static void saveRiders(List<Rider> list) {
         try (PrintWriter pw = new PrintWriter(new FileWriter(RIDERS_FILE))) {
             for (Rider r : list)
@@ -181,7 +211,10 @@ public class FileManager {
                 if (line.isEmpty()) continue;
                 String[] parts = line.split(",", 3);
                 if (parts.length == 3)
-                    list.add(new Rider(Integer.parseInt(parts[0]), unescape(parts[1]), Integer.parseInt(parts[2])));
+                    list.add(new Rider(
+                            Integer.parseInt(parts[0]),
+                            unescape(parts[1]),
+                            Integer.parseInt(parts[2])));
             }
         } catch (IOException e) {
             System.out.println("[File] Error loading riders: " + e.getMessage());
@@ -190,10 +223,12 @@ public class FileManager {
     }
 
     // ================================================================
-    //  HELPERS — escape/unescape commas inside field values
-    //  We replace commas inside values with a placeholder so CSV
-    //  parsing doesn't break.
+    //  ESCAPE / UNESCAPE HELPERS
+    //  Commas inside field values would break CSV parsing, so we
+    //  replace them with a placeholder before saving and restore them
+    //  after loading.
     // ================================================================
+
     private static String escape(String s) {
         return s.replace(",", "{{COMMA}}").replace("\n", "{{NEWLINE}}");
     }
