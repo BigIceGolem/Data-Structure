@@ -22,11 +22,16 @@ import java.util.List;
  */
 public class FoodBST {
 
-    private BSTNode root; // the top of the tree (null if tree is empty)
-    private String lastPrintedRestaurant = ""; // Used for formatting headers
+    // The top (root) node of the tree
+    // If this is null, the tree is completely empty
+    private BSTNode root;
+
+    // Used during in-order printing to track when we need to print a new restaurant header
+    private String lastPrintedRestaurant = "";
 
     /*
-     * Public insert — starts the recursive insertion from the root.
+     * Public insert — the entry point for adding a new food item to the tree.
+     * It calls the private recursive helper to find the right position.
      */
     public void insert(FoodItem item) {
         root = insertRec(root, item);
@@ -35,22 +40,36 @@ public class FoodBST {
 
     /*
      * Recursive insert helper.
-     * Compares names to decide whether to go left (before) or right (after).
-     * When it reaches a null spot, that's where the new node goes.
+     * At each node, we compare the new item's name with the current node's name:
+     *   - If the new name comes BEFORE (alphabetically), go LEFT
+     *   - If the new name comes AFTER, go RIGHT
+     *   - If we find an empty spot (null), that's where the new node goes
+     * The method returns the (possibly updated) node at each level of recursion.
      */
     private BSTNode insertRec(BSTNode node, FoodItem item) {
-        if (node == null) return new BSTNode(item); // empty spot found — insert here
+        // Found an empty spot — place the new node here
+        if (node == null) return new BSTNode(item);
 
+        // Compare names (case-insensitive) to decide which direction to go
         int cmp = item.name.compareToIgnoreCase(node.data.name);
-        if      (cmp < 0) node.left  = insertRec(node.left,  item); // item name comes before
-        else if (cmp > 0) node.right = insertRec(node.right, item); // item name comes after
-        else System.out.println("[BST] Duplicate item ignored: " + item.name);
 
-        return node;
+        if (cmp < 0) {
+            // New item's name comes BEFORE this node's name — go left
+            node.left = insertRec(node.left, item);
+        } else if (cmp > 0) {
+            // New item's name comes AFTER this node's name — go right
+            node.right = insertRec(node.right, item);
+        } else {
+            // Exact same name already exists — skip it to avoid duplicates
+            System.out.println("[BST] Duplicate item ignored: " + item.name);
+        }
+
+        return node; // return this node back up the recursive call chain
     }
 
     /*
-     * Public search — starts the recursive search from the root.
+     * Public search — the entry point for finding a food item by name.
+     * It calls the private recursive helper starting from the root.
      */
     public FoodItem search(String name) {
         BSTNode result = searchRec(root, name);
@@ -65,57 +84,68 @@ public class FoodBST {
 
     /*
      * Recursive search helper.
-     * At each node we compare names:
-     * match  → return this node
-     * before → go left
-     * after  → go right
-     * Returns null if we fall off the tree without finding it.
+     * At each node, compare the target name with the current node:
+     *   - Match  → we found it, return this node
+     *   - Before → go left (the item should be in the left subtree)
+     *   - After  → go right (the item should be in the right subtree)
+     *   - null   → we fell off the tree without finding it
      */
     private BSTNode searchRec(BSTNode node, String name) {
-        if (node == null) return null; // reached a dead end — not found
+        // Reached a dead end — the item is not in the tree
+        if (node == null) return null;
 
         int cmp = name.compareToIgnoreCase(node.data.name);
-        if      (cmp == 0) return node;                      // found it
-        else if (cmp <  0) return searchRec(node.left,  name); // look left
-        else               return searchRec(node.right, name); // look right
+
+        if (cmp == 0) {
+            return node;                         // found the matching node
+        } else if (cmp < 0) {
+            return searchRec(node.left, name);   // look in the left subtree
+        } else {
+            return searchRec(node.right, name);  // look in the right subtree
+        }
     }
 
     /*
-     * Prints all food items formatted with Restaurant headers.
-     * Because of the BST rule, this naturally groups by restaurant A-Z.
+     * Prints the full food menu grouped by restaurant, in alphabetical order.
+     * In-order traversal (left → current → right) naturally visits nodes
+     * in alphabetical order because of how the BST is structured.
      */
     public void inOrderTraversal() {
         System.out.println("\n[BST] Food Menu (Sorted by Restaurant & Item):");
-        lastPrintedRestaurant = ""; // Reset for fresh traversal
+        lastPrintedRestaurant = ""; // reset the restaurant tracker for a fresh print
         inOrderRec(root);
-        System.out.println(); // Final line break
+        System.out.println(); // blank line at the end for readability
     }
 
     private void inOrderRec(BSTNode node) {
-        if (node == null) return;      
-        
-        inOrderRec(node.left);         // visit everything that comes before
+        if (node == null) return; // base case: nothing to print here
 
-        // Process current node
-        String fullName = node.data.name; 
+        inOrderRec(node.left); // first, visit everything with a name that comes BEFORE this node
+
+        // Now process the current node
+        // Food item names are stored as "RestaurantName - FoodName"
+        // We split them so we can print a restaurant header when the restaurant changes
+        String fullName = node.data.name;
         String[] parts = fullName.split(" - ", 2);
-        String restaurant = parts.length > 1 ? parts[0] : "Other";
-        String foodItem = parts.length > 1 ? parts[1] : fullName;
+        String restaurant = parts.length > 1 ? parts[0] : "Other";  // e.g. "Burger King"
+        String foodItem   = parts.length > 1 ? parts[1] : fullName; // e.g. "Whopper Meal"
 
-        // Print header if the restaurant name changes
+        // Print a restaurant header the first time we see a new restaurant name
         if (!restaurant.equals(lastPrintedRestaurant)) {
             System.out.println("\n--- " + restaurant + " ---");
-            lastPrintedRestaurant = restaurant;
+            lastPrintedRestaurant = restaurant; // remember so we don't print it again
         }
-        
+
+        // Print the food item and its price
         System.out.println("  " + foodItem + " (RM" + String.format("%.2f", node.data.price) + ")");
 
-        inOrderRec(node.right);        // visit everything that comes after
+        inOrderRec(node.right); // finally, visit everything with a name that comes AFTER this node
     }
 
     /*
-     * Collects all items into a list using in-order traversal.
-     * Used by FileManager to save the menu to CSV.
+     * Collects all food items into a regular list using in-order traversal.
+     * The result is automatically sorted alphabetically.
+     * Used by FileManager when saving the menu to a CSV file.
      */
     public List<FoodItem> toList() {
         List<FoodItem> list = new ArrayList<>();
@@ -123,10 +153,11 @@ public class FoodBST {
         return list;
     }
 
+    // Recursive helper that adds each node's item to the list in alphabetical order
     private void collectInOrder(BSTNode node, List<FoodItem> list) {
         if (node == null) return;
-        collectInOrder(node.left, list);
-        list.add(node.data);
-        collectInOrder(node.right, list);
+        collectInOrder(node.left, list);  // collect left subtree first
+        list.add(node.data);              // then add the current item
+        collectInOrder(node.right, list); // then collect right subtree
     }
 }

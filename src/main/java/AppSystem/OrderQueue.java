@@ -21,33 +21,39 @@ import java.util.Queue;
  */
 public class OrderQueue {
 
-    // LinkedList is used as the underlying structure for the queue
+    // The queue that holds all confirmed orders waiting to be processed
+    // LinkedList is used here because it efficiently supports adding at the
+    // back and removing from the front — exactly what a queue needs
     private final Queue<Order> queue = new LinkedList<>();
 
     /*
-     * Adds a new order to the back of the queue — O(1).
+     * Adds a confirmed order to the BACK of the queue.
+     * This is O(1) — adding to the end of a LinkedList is instant.
      */
     public void enqueue(Order order) {
-        queue.add(order);
+        queue.add(order); // place the new order at the back of the line
         System.out.println("[Order Queue] Enqueued: " + order);
     }
 
     /*
-     * Removes and returns the order at the front of the queue — O(1).
-     * This is the FIFO behaviour: whoever ordered first gets processed first.
+     * Takes the FIRST order out of the queue and returns it for processing.
+     * This is FIFO — whoever ordered first gets processed first.
+     * poll() is O(1) — removing from the front of a LinkedList is instant.
+     * Returns null if the queue is empty.
      */
     public Order processNextOrder() {
         if (queue.isEmpty()) {
             System.out.println("[Order Queue] No orders to process.");
             return null;
         }
-        Order o = queue.poll(); // removes from the front
+        Order o = queue.poll(); // remove and return the order at the front
         System.out.println("[Order Queue] Processing: " + o);
         return o;
     }
 
     /*
-     * Shows all pending orders without removing any of them.
+     * Prints all orders currently waiting in the queue.
+     * Does NOT remove any orders — just shows what's pending.
      */
     public void displayQueue() {
         if (queue.isEmpty()) {

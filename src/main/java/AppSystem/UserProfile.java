@@ -14,26 +14,39 @@ import java.util.List;
  * which lets us quickly show a customer's full order history.
  */
 public class UserProfile {
-    int          userId;
-    String       name;
-    String       email;
-    List<Integer> orderHistory; // list of order IDs placed by this customer
 
+    // The unique ID of this customer — used as the key in the HashMap
+    int          userId;
+
+    // The customer's name
+    String       name;
+
+    // The customer's email address
+    String       email;
+
+    // A list of all order IDs placed by this customer, e.g. [1001, 1005, 1009]
+    // Grows each time the customer places a new order
+    List<Integer> orderHistory;
+
+    // Constructor: creates a new profile for the given customer
+    // Order history starts empty — orders are added as the customer places them
     public UserProfile(int userId, String name, String email) {
         this.userId       = userId;
         this.name         = name;
         this.email        = email;
-        this.orderHistory = new ArrayList<>();
+        this.orderHistory = new ArrayList<>(); // no orders yet
     }
 
     /*
-     * Links a new order ID to this customer's history.
-     * Called automatically when an order is confirmed.
+     * Records a new order ID in this customer's history.
+     * Called automatically when the customer confirms a new order.
      */
     public void addOrderToHistory(int orderId) {
         orderHistory.add(orderId);
     }
 
+    // Controls how a UserProfile looks when printed
+    // Example: "UserProfile{id=1, name=Alice, email=alice@email.com, orders=[1001, 1005]}"
     @Override
     public String toString() {
         return "UserProfile{id=" + userId

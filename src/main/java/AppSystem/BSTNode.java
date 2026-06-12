@@ -18,13 +18,21 @@ package AppSystem;
  *       [Miso Soup] [Rendang]
  */
 public class BSTNode {
-    FoodItem data;   // the food item stored at this node
-    BSTNode  left;   // subtree with names that come before this one
-    BSTNode  right;  // subtree with names that come after this one
 
+    // The food item that this node holds
+    FoodItem data;
+
+    // Points to the left child — a food item whose name comes earlier in the alphabet
+    BSTNode  left;
+
+    // Points to the right child — a food item whose name comes later in the alphabet
+    BSTNode  right;
+
+    // Constructor: creates a new node that holds the given food item
+    // Both left and right start as null because the node has no children yet
     public BSTNode(FoodItem data) {
         this.data  = data;
-        this.left  = null;
-        this.right = null;
+        this.left  = null;  // no left child yet
+        this.right = null;  // no right child yet
     }
 }

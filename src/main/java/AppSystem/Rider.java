@@ -12,10 +12,17 @@ package AppSystem;
  */
 public class Rider implements Comparable<Rider> {
 
+    // A unique ID number for this rider (starts at 201)
     int    id;
-    String name;
-    int    distanceKm; // how far the rider is from the restaurant right now
 
+    // The rider's name, e.g. "Hafiz"
+    String name;
+
+    // How many kilometres the rider is currently from the restaurant
+    // A smaller number means the rider is closer and will be picked first
+    int    distanceKm;
+
+    // Constructor: creates a new rider with the given details
     public Rider(int id, String name, int distanceKm) {
         this.id          = id;
         this.name        = name;
@@ -23,15 +30,23 @@ public class Rider implements Comparable<Rider> {
     }
 
     /*
-     * Defines the ordering rule for the min-heap.
-     * Returning a negative number means "this rider goes before other".
-     * We want the smallest distance at the top, so we compare distanceKm.
+     * compareTo() tells the PriorityQueue (min-heap) how to rank two riders.
+     * We compare by distanceKm — the rider with the SMALLER distance wins.
+     *
+     * Java's PriorityQueue automatically puts the "smallest" element at the top.
+     * Because we compare by distanceKm, the closest rider is always at the top.
+     *
+     * Integer.compare(a, b) returns:
+     *   negative if a < b  → this rider goes before the other (closer)
+     *   zero     if a == b → same distance, order doesn't matter
+     *   positive if a > b  → the other rider goes first (they're closer)
      */
     @Override
     public int compareTo(Rider other) {
         return Integer.compare(this.distanceKm, other.distanceKm);
     }
 
+    // Controls how a Rider looks when printed, e.g. "Hafiz (ID:201, 3km away)"
     @Override
     public String toString() {
         return name + " (ID:" + id + ", " + distanceKm + "km away)";

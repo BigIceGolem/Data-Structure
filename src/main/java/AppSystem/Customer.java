@@ -8,15 +8,25 @@ package AppSystem;
  * reference (next) that points to the next customer in the chain.
  */
 public class Customer {
-    int      id;       // unique identifier assigned at creation
-    String   name;
-    String   address;
-    Customer next;     // pointer to the next node in the linked list
 
+    // A unique number given to each customer so we can tell them apart
+    int      id;
+
+    // The customer's full name
+    String   name;
+
+    // The customer's delivery address
+    String   address;
+
+    // A pointer to the next customer in the linked list
+    // When this is null, it means this customer is the last one in the list
+    Customer next;
+
+    // Constructor: creates a new customer with the given details
     public Customer(int id, String name, String address) {
         this.id      = id;
         this.name    = name;
         this.address = address;
-        this.next    = null; // no next node yet when first created
+        this.next    = null; // not linked to any other customer yet
     }
 }

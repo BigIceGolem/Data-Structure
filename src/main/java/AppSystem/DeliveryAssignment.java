@@ -24,37 +24,42 @@ import java.util.PriorityQueue;
  */
 public class DeliveryAssignment {
 
-    // the heap keeps the nearest rider at the top automatically
+    // The min-heap that holds all available riders
+    // The rider with the SMALLEST distanceKm is always at the top
     private final PriorityQueue<Rider> minHeap = new PriorityQueue<>();
 
     /*
-     * Adds a rider to the heap. The heap re-arranges itself to keep
-     * the nearest rider at the top — O(log n).
+     * Adds a rider to the heap.
+     * The heap automatically rearranges itself so the nearest rider stays on top.
+     * Adding is O(log n) because the heap may need to "bubble up" the new rider.
      */
     public void addRider(Rider r) {
-        minHeap.offer(r);
+        minHeap.offer(r); // add the rider to the heap
         System.out.println("[Riders] Added: " + r);
     }
 
     /*
-     * Removes and returns the nearest rider (top of the heap).
-     * The heap automatically promotes the next-nearest rider to the top.
-     * O(log n).
+     * Removes and returns the nearest rider (the one at the top of the heap).
+     * After removal, the heap automatically promotes the next-nearest rider to the top.
+     * This is O(log n).
+     *
+     * Returns null if there are no riders available.
      */
     public Rider assignBestRider() {
         if (minHeap.isEmpty()) {
             System.out.println("[Riders] No riders available.");
             return null;
         }
-        Rider best = minHeap.poll(); // always the nearest rider
+        // poll() removes and returns the top item — always the nearest rider
+        Rider best = minHeap.poll();
         System.out.println("[Riders] Assigned best rider: " + best);
         return best;
     }
 
     /*
      * Shows all riders currently in the heap.
-     * Note: the printed order is internal heap order, not sorted —
-     * only the first element is guaranteed to be the minimum.
+     * Note: the printed order reflects the heap's internal structure, not a sorted list.
+     * Only the very first item printed is guaranteed to be the nearest rider.
      */
     public void displayRiders() {
         if (minHeap.isEmpty()) {
@@ -65,7 +70,8 @@ public class DeliveryAssignment {
     }
 
     /*
-     * Returns all riders as a list for CSV saving.
+     * Converts the heap into a plain ArrayList.
+     * Used by FileManager when saving rider data to a CSV file.
      */
     public List<Rider> toList() {
         return new ArrayList<>(minHeap);
